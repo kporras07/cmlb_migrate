@@ -1,0 +1,11 @@
+name: 'cmlb_migrate'
+type: module
+description: 'Layout Builder Migration PoC'
+dependencies:
+    - migrate_plus
+    - migrate_tools
+    - migrate_drupal
+    - node
+    - taxonomy
+core: 8.x
+package: 'Custom'

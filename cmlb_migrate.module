@@ -1,0 +1,90 @@
+<?php
+
+/**
+ * @file
+ * Contains cmlb_migrate.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+use Rct567\DomQuery\DomQuery;
+use Drupal\layout_builder\Section;
+use Drupal\layout_builder\SectionComponent;
+use Drupal\block_content\Entity\BlockContent;
+
+/**
+ * Implements hook_help().
+ */
+function cmlb_migrate_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the cmlb_migrate module.
+    case 'help.page.cmlb_migrate':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('My Awesome Module') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Callback.
+ */
+function cmlb_migrate_layout_builder($value) {
+  $body = $value['value'];
+  $tags = [
+    'ckvimeo' => [
+      'data-url',
+    ],
+  ];
+  $dom = new DomQuery($body);
+  $blocks = [];
+  foreach ($tags as $tag => $attributes) {
+    $parsed_tags = $dom->find($tag);
+    foreach ($parsed_tags as $parsed_tag) {
+      $new_markup = '<div class="' . $tag . '"></div>';
+      var_dump($new_markup);
+      $new_tag = new DomQuery($new_markup);
+      foreach ($attributes as $attribute) {
+        $new_tag->attr($attribute, $parsed_tag->attr($attribute));
+      }
+      $new_tag->text($parsed_tag->attr($attribute));
+      $blocks[] = (string) $new_tag;
+    }
+  }
+
+  array_unshift($blocks, $body);
+
+  $sections = [];
+  $section = Section::fromArray([
+    'layout_id' => 'layout_onecol',
+    'layout_settings' => [],
+  ]);
+  $uuid_service = \Drupal::service('uuid');
+
+  foreach ($blocks as $block) {
+    $block_content = BlockContent::create([
+      'type' => 'basic_block',
+      'reusable' => FALSE,
+    ]);
+    $block_content->body->format = 'full_html';
+    $block_content->body->value = $block;
+    $block_content->save();
+
+    $uuid = $uuid_service->generate();
+    $region = 'content';
+    $configuration = [
+      'id' => 'inline_block:basic_block',
+      'label' => 'LABEL',
+      'provider' => 'layout_builder',
+      'label_display' => 'visible',
+      'view_mode' => 'full',
+      'block_revision_id' => $block_content->getRevisionId(),
+    ];
+    $component = new SectionComponent($uuid, $region, $configuration);
+    $section->appendComponent($component);
+  }
+  $sections = ['section' => $section];
+  return $sections;
+}

@@ -1,0 +1,8 @@
+{
+    "name": "drupal/cmlb_migrate",
+    "description": "Layout Builder Migration PoC",
+    "type": "drupal-module",
+    "require": {
+        "rct567/dom-query": "^0.8.0"
+    }
+}

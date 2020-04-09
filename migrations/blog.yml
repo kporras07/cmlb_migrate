@@ -1,0 +1,33 @@
+id: blog
+label: Blog items
+migration_tags:
+  - node
+  - Drupal 7
+migration_group: cmlb
+source:
+  plugin: d7_node
+  node_type: blog
+  key: d7
+destination:
+  plugin: 'entity:node'
+process:
+  type:
+    plugin: default_value
+    default_value: article
+  title: title
+  status: status
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_log: log
+  body/value: body/0/value
+  body/format:
+    plugin: default_value
+    default_value: full_html
+  layout_builder__layout:
+    plugin: callback
+    callable: cmlb_migrate_layout_builder
+    source: body
+  created: created
+
+migration_dependencies: {}
